@@ -1,4 +1,30 @@
 import 'package:flutter/material.dart';
+import 'user_page.dart';
+import 'home_page.dart';
+
+
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Posts App',
+      initialRoute: '/', // Définir la route initiale
+      routes: {
+        '/': (context) => HomePage(), // Route vers la page d'accueil
+        '/users': (context) => UsersPage(), // Route vers la page des utilisateurs
+      },
+    );
+  }
+}
+
+/*import 'package:flutter/material.dart';
 import 'services/api_service.dart';
 
 void main() {
@@ -266,4 +292,4 @@ class _UserListPageState extends State<UserListPage> {
       ),
     );
   }
-}
+}*/
