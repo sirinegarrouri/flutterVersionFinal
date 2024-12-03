@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'user_detail.dart';
 import 'http_service.dart';
 import 'user_model.dart';
+import 'user_detail.dart';
 
 class UsersPage extends StatefulWidget {
   @override
@@ -11,7 +11,12 @@ class UsersPage extends StatefulWidget {
 
 class _UsersPageState extends State<UsersPage> {
   final HttpService httpService = HttpService();
-  final _formKey = GlobalKey<FormState>(); // Déclaration de _formKey
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -39,13 +44,13 @@ class _UsersPageState extends State<UsersPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.edit), // Icône pour modifier
+                      icon: Icon(Icons.edit),
                       onPressed: () {
                         _showEditDialog(context, user);
                       },
                     ),
                     IconButton(
-                      icon: Icon(Icons.delete), // Icône pour supprimer
+                      icon: Icon(Icons.delete),
                       onPressed: () {
                         _deleteUser(user.id);
                       },
@@ -62,7 +67,7 @@ class _UsersPageState extends State<UsersPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showPostDialog(context); // Appel à la méthode pour ajouter un utilisateur
+          showPostDialog(context);
         },
         child: Icon(Icons.add_circle),
       ),
@@ -75,9 +80,9 @@ class _UsersPageState extends State<UsersPage> {
     String email = '';
     String password = '';
     int age = 0;
-    bool active = true; // Valeur par défaut
-    DateTime starterDate = DateTime.now(); // Date par défaut
-    String selectedStatus = 'active'; // Pour gérer l'état actif/non actif
+    bool active = true;
+    DateTime starterDate = DateTime.now();
+    String selectedStatus = 'active';
 
     return await showDialog<void>(
       context: context,
@@ -149,20 +154,19 @@ class _UsersPageState extends State<UsersPage> {
                       lastDate: DateTime.now(),
                     );
                     if (pickedDate != null && pickedDate != starterDate)
-                      starterDate = pickedDate; // Met à jour la date choisie
+                      starterDate = pickedDate;
                   },
                   child: AbsorbPointer(
-                  child: TextFormField(
-                    decoration:
-                    InputDecoration(labelText: 'Date de début', hintText: "${starterDate.toLocal()}".split(' ')[0]),
-                    validator: (value) {
-                      if (starterDate == null) {
-                        return 'Veuillez choisir une date';
-                      }
-                      return null;
-                    },
+                    child: TextFormField(
+                      decoration: InputDecoration(labelText: 'Date de début', hintText: "${starterDate.toLocal()}".split(' ')[0]),
+                      validator: (value) {
+                        if (starterDate == null) {
+                          return 'Veuillez choisir une date';
+                        }
+                        return null;
+                      },
+                    ),
                   ),
-                ),
                 ),
                 Row(
                   children: [
@@ -202,7 +206,7 @@ class _UsersPageState extends State<UsersPage> {
               child: Text('Ajouter'),
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  String userJson = jsonEncode(<String,dynamic>{
+                  String userJson = jsonEncode(<String, dynamic>{
                     'firstName': firstName,
                     'lastName': lastName,
                     'email': email,
@@ -212,11 +216,10 @@ class _UsersPageState extends State<UsersPage> {
                     'active': active,
                   });
 
-                   httpService.addUser(userJson); // Appel à la méthode d'ajout
-                  setState(() {}); // Rafraîchit la liste des utilisateurs après la suppression
-                  Navigator.of(context).pop(); // Ferme le dialog
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:
-                    Text('user added successfully')));
+                  await httpService.addUser(userJson); // Appel à la méthode d'ajout
+                  setState(() {});
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur ajouté avec succès')));
                 }
               },
             ),
@@ -225,59 +228,108 @@ class _UsersPageState extends State<UsersPage> {
       },
     );
   }
-//methode de l'update
+
   void _showEditDialog(BuildContext context, User user) {
-    // Implémentez la logique pour afficher un dialogue d'édition ici
+    _firstNameController.text = user.firstName;
+    _lastNameController.text = user.lastName;
+    _emailController.text = user.email;
+    _passwordController.text = user.password;
+    _ageController.text = user.age.toString();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        // Vous pouvez créer un formulaire d'édition ici
         return AlertDialog(
           title: Text('Modifier l\'Utilisateur'),
-          content:
-          Text('Formulaire pour modifier ${user.firstName} ${user.lastName}'), // Remplacez par votre formulaire
-          actions:<Widget>[
-            TextButton(
-              child :Text('Annuler'),
-              onPressed :() {Navigator.of(context).pop();},
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _firstNameController,
+                  decoration: InputDecoration(labelText: 'Prénom'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veuillez entrer un prénom';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _lastNameController,
+                  decoration: InputDecoration(labelText: 'Nom'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veuillez entrer un nom';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(labelText: 'Email'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veuillez entrer un email';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(labelText: 'Mot de passe'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veuillez entrer un mot de passe';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _ageController,
+                  decoration: InputDecoration(labelText: 'Âge'),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || int.tryParse(value) == null) {
+                      return 'Veuillez entrer un âge valide';
+                    }
+                    return null;
+                  },
+                ),
+              ],
             ),
+          ),
+          actions: <Widget>[
             ElevatedButton(
-              child :Text('Sauvegarder'),
-              onPressed :() {Navigator.of(context).pop();},
-            )
+              child: Text('Modifier'),
+              onPressed: () async {
+                if (_formKey.currentState!.validate()) {
+                  String updatedUserJson = jsonEncode({
+                    'id': user.id,
+                    'firstName': _firstNameController.text,
+                    'lastName': _lastNameController.text,
+                    'email': _emailController.text,
+                    'password': _passwordController.text,
+                    'age': int.parse(_ageController.text),
+                  });
+
+                  await httpService.updateUser(user.id, updatedUserJson);
+                  setState(() {});
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur modifié avec succès')));
+                }
+              },
+            ),
           ],
         );
       },
     );
   }
-//méthode de la supression
+
   void _deleteUser(int userId) async {
-    bool? confirm = await showDialog<bool>(
-        context :context,
-        builder :(BuildContext context){
-          return AlertDialog(
-            title :Text('Confirmer la suppression'),
-            content :Text('Êtes-vous sûr de vouloir supprimer cet utilisateur ?'),
-            actions :<Widget>[
-              TextButton(
-                child :Text('Annuler'),
-                onPressed :() => Navigator.of(context).pop(false),
-              ),
-              ElevatedButton(
-                child :Text('Supprimer'),
-                onPressed :() => Navigator.of(context).pop(true),
-              )
-            ],
-          );
-        }
-    );
-
-    if(confirm == true){
-         httpService.deleteUser(userId); // Implémentez cette méthode dans votre HttpService
-        setState(() {}); // Rafraîchit la liste des utilisateurs après la suppression
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:
-        Text('user deleted')));
-      }
-
+    await httpService.deleteUser(userId);
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur supprimé')));
   }
 }
