@@ -31,4 +31,17 @@ class User {
       active: json['active'] as bool,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'password': password,
+      'starterDate': starterDate.millisecondsSinceEpoch,
+      'age': age,
+      'active': active,
+    };
+  }
 }

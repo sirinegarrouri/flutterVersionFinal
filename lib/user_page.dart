@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'user_detail.dart';
 import 'http_service.dart';
 import 'user_model.dart';
-import 'user_detail.dart';
 
 class UsersPage extends StatefulWidget {
   @override
@@ -11,12 +11,7 @@ class UsersPage extends StatefulWidget {
 
 class _UsersPageState extends State<UsersPage> {
   final HttpService httpService = HttpService();
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _ageController = TextEditingController();
+  final _formKey = GlobalKey<FormState>(); // Déclaration de _formKey
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +39,13 @@ class _UsersPageState extends State<UsersPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.edit),
+                      icon: Icon(Icons.edit), // Icône pour modifier
                       onPressed: () {
                         _showEditDialog(context, user);
                       },
                     ),
                     IconButton(
-                      icon: Icon(Icons.delete),
+                      icon: Icon(Icons.delete), // Icône pour supprimer
                       onPressed: () {
                         _deleteUser(user.id);
                       },
@@ -67,7 +62,7 @@ class _UsersPageState extends State<UsersPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showPostDialog(context);
+          showPostDialog(context); // Appel à la méthode pour ajouter un utilisateur
         },
         child: Icon(Icons.add_circle),
       ),
@@ -80,9 +75,9 @@ class _UsersPageState extends State<UsersPage> {
     String email = '';
     String password = '';
     int age = 0;
-    bool active = true;
-    DateTime starterDate = DateTime.now();
-    String selectedStatus = 'active';
+    bool active = true; // Valeur par défaut
+    DateTime starterDate = DateTime.now(); // Date par défaut
+    String selectedStatus = 'active'; // Pour gérer l'état actif/non actif
 
     return await showDialog<void>(
       context: context,
@@ -117,13 +112,14 @@ class _UsersPageState extends State<UsersPage> {
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Email'),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer un email';
+                    if (value == null || value.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                      return 'Veuillez entrer un email valide';
                     }
                     return null;
                   },
                   onChanged: (value) => email = value,
                 ),
+
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Mot de passe'),
                   validator: (value) {
@@ -154,11 +150,12 @@ class _UsersPageState extends State<UsersPage> {
                       lastDate: DateTime.now(),
                     );
                     if (pickedDate != null && pickedDate != starterDate)
-                      starterDate = pickedDate;
+                      starterDate = pickedDate; // Met à jour la date choisie
                   },
                   child: AbsorbPointer(
                     child: TextFormField(
-                      decoration: InputDecoration(labelText: 'Date de début', hintText: "${starterDate.toLocal()}".split(' ')[0]),
+                      decoration:
+                      InputDecoration(labelText: 'Date de début', hintText: "${starterDate.toLocal()}".split(' ')[0]),
                       validator: (value) {
                         if (starterDate == null) {
                           return 'Veuillez choisir une date';
@@ -206,7 +203,7 @@ class _UsersPageState extends State<UsersPage> {
               child: Text('Ajouter'),
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  String userJson = jsonEncode(<String, dynamic>{
+                  String userJson = jsonEncode(<String,dynamic>{
                     'firstName': firstName,
                     'lastName': lastName,
                     'email': email,
@@ -216,10 +213,11 @@ class _UsersPageState extends State<UsersPage> {
                     'active': active,
                   });
 
-                  await httpService.addUser(userJson); // Appel à la méthode d'ajout
-                  setState(() {});
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur ajouté avec succès')));
+                  httpService.addUser(userJson); // Appel à la méthode d'ajout
+                  setState(() {}); // Rafraîchit la liste des utilisateurs après la suppression
+                  Navigator.of(context).pop(); // Ferme le dialog
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:
+                  Text('user added successfully')));
                 }
               },
             ),
@@ -230,11 +228,15 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   void _showEditDialog(BuildContext context, User user) {
-    _firstNameController.text = user.firstName;
-    _lastNameController.text = user.lastName;
-    _emailController.text = user.email;
-    _passwordController.text = user.password;
-    _ageController.text = user.age.toString();
+    final _formKey = GlobalKey<FormState>();
+
+    // Variables pour stocker les valeurs modifiées
+    String firstName = user.firstName;
+    String lastName = user.lastName;
+    String email = user.email;
+    String password = user.password;
+
+    int age = user.age;
 
     showDialog(
       context: context,
@@ -245,9 +247,9 @@ class _UsersPageState extends State<UsersPage> {
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
+              children: <Widget>[
                 TextFormField(
-                  controller: _firstNameController,
+                  initialValue: firstName,
                   decoration: InputDecoration(labelText: 'Prénom'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -255,9 +257,12 @@ class _UsersPageState extends State<UsersPage> {
                     }
                     return null;
                   },
+                  onChanged: (value) {
+                    firstName = value;
+                  },
                 ),
                 TextFormField(
-                  controller: _lastNameController,
+                  initialValue: lastName,
                   decoration: InputDecoration(labelText: 'Nom'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -265,29 +270,38 @@ class _UsersPageState extends State<UsersPage> {
                     }
                     return null;
                   },
+                  onChanged: (value) {
+                    lastName = value;
+                  },
                 ),
                 TextFormField(
-                  controller: _emailController,
+                  initialValue: email,
                   decoration: InputDecoration(labelText: 'Email'),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer un email';
+                    if (value == null || value.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                      return 'Veuillez entrer un email valide';
                     }
                     return null;
                   },
+                  onChanged: (value) {
+                    email = value;
+                  },
                 ),
                 TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(labelText: 'Mot de passe'),
+                  initialValue: password,
+                  decoration: InputDecoration(labelText: 'password'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer un mot de passe';
+                      return 'Veuillez entrer un password';
                     }
                     return null;
                   },
+                  onChanged: (value) {
+                    password = value;
+                  },
                 ),
                 TextFormField(
-                  controller: _ageController,
+                  initialValue: age.toString(),
                   decoration: InputDecoration(labelText: 'Âge'),
                   keyboardType: TextInputType.number,
                   validator: (value) {
@@ -296,28 +310,51 @@ class _UsersPageState extends State<UsersPage> {
                     }
                     return null;
                   },
+                  onChanged: (value) {
+                    age = int.tryParse(value) ?? user.age; // Garder l'âge actuel si la conversion échoue
+                  },
                 ),
               ],
             ),
           ),
           actions: <Widget>[
+            TextButton(
+              child: Text('Annuler'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
             ElevatedButton(
-              child: Text('Modifier'),
+              child: Text('Sauvegarder'),
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  String updatedUserJson = jsonEncode({
-                    'id': user.id,
-                    'firstName': _firstNameController.text,
-                    'lastName': _lastNameController.text,
-                    'email': _emailController.text,
-                    'password': _passwordController.text,
-                    'age': int.parse(_ageController.text),
-                  });
+                  // Créer un nouvel objet User avec les valeurs modifiées
+                  User updatedUser = User(
+                    id: user.id, // L'ID ne doit pas être modifié
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    password: password, // Garder le mot de passe actuel
+                    starterDate: user.starterDate, // Garder la date de début actuelle
+                    age: age,
+                    active: user.active, // Garder l'état actif actuel
+                  );
 
-                  await httpService.updateUser(user.id, updatedUserJson);
-                  setState(() {});
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur modifié avec succès')));
+                  // Appeler la méthode updateUser du HttpService
+                  try {
+                    await httpService.updateUser(user.id, updatedUser);
+                    setState(() {});
+                    Navigator.of(context).pop(); // Fermer le dialogue
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Utilisateur mis à jour avec succès')),
+                    );
+                  } catch (e) {
+                    // Gérer les erreurs
+                    print('Erreur lors de la mise à jour de l\'utilisateur : $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erreur lors de la mise à jour de l\'utilisateur')),
+                    );
+                  }
                 }
               },
             ),
@@ -328,8 +365,32 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   void _deleteUser(int userId) async {
-    await httpService.deleteUser(userId);
-    setState(() {});
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Utilisateur supprimé')));
+    bool? confirm = await showDialog<bool>(
+        context :context,
+        builder :(BuildContext context){
+          return AlertDialog(
+            title :Text('Confirmer la suppression'),
+            content :Text('Êtes-vous sûr de vouloir supprimer cet utilisateur ?'),
+            actions :<Widget>[
+              TextButton(
+                child :Text('Annuler'),
+                onPressed :() => Navigator.of(context).pop(false),
+              ),
+              ElevatedButton(
+                child :Text('Supprimer'),
+                onPressed :() => Navigator.of(context).pop(true),
+              )
+            ],
+          );
+        }
+    );
+
+    if(confirm == true){
+      httpService.deleteUser(userId); // Implémentez cette méthode dans votre HttpService
+      setState(() {}); // Rafraîchit la liste des utilisateurs après la suppression
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:
+      Text('user deleted')));
+    }
+
   }
 }
